@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
 
 export class AdminAuthDto {
   @IsString()
@@ -7,3 +7,16 @@ export class AdminAuthDto {
   @IsString()
   readonly password: string;
 }
+
+export class CreateUsersDto {
+  @IsString()
+  readonly login: string;
+
+  @IsString()
+  readonly email: string;
+}
+
+// export class CreateUsersDto {
+//   @IsArray()
+//   users: CreateUsersModel[];
+// }

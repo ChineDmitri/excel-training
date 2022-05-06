@@ -2,20 +2,23 @@ import { Injectable } from '@nestjs/common';
 
 import { AdminQuery } from '../database/admin.query';
 
+import * as nodemailer from 'nodemailer';
+import { createHmac } from 'crypto';
 import { compare } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
 import { ResponseAuth } from './entities/admin.entity';
 
-import { AdminAuthDto } from './dto/adminAuth.dto';
+import { AdminAuthDto, CreateUsersDto } from './dto/adminAuth.dto';
 
 import { IAdmin } from '../interfaces/admin.interfaces';
+import { IUser } from '../interfaces/user.interfaces';
 
 @Injectable()
 export class AdminService {
   constructor(private readonly adminQuery: AdminQuery) {}
 
-  async login(admin: AdminAuthDto) {
+  async authentification(admin: AdminAuthDto) {
     const objRes: ResponseAuth = {
       isAuth: false,
       message: '',
@@ -50,7 +53,7 @@ export class AdminService {
           userId: adminData.id,
           login: adminData.login,
         },
-        process.env.tokenKey,
+        process.env.jwtKey,
         { expiresIn: '24h' },
       );
 
@@ -65,6 +68,52 @@ export class AdminService {
 
       // mot de passe erroné
       return { objRes };
+    }
+  }
+
+  sendMail(message): void {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.' + process.env.hostSMTP,
+      port: parseInt(process.env.portSMTP, 10),
+      auth: {
+        user: process.env.userSMTP + '@ethereal.email',
+        pass: process.env.passSMTP,
+      },
+    });
+
+    transporter.sendMail(message);
+  }
+
+  async createUsers(users: CreateUsersDto[]) {
+    for (const user of users) {
+      const newUser: IUser = {
+        login: user.login,
+        email: user.email,
+        password: '',
+      };
+
+      const passwordUser = createHmac('sha256', process.env.sha256_password)
+        .update(user.email)
+        .digest('hex')
+        .substring(0, 5);
+
+      newUser.password = passwordUser;
+
+      const messageForEmail = {
+        from: 'Mailler test <letitia.tillman91@ethereal.email>',
+        to: newUser.email,
+        subject: 'Enregistrement sur platforme ExcellentRANS',
+        text: `Vous etes enregistré sur platform ExcellentRANS
+    
+        login: ${newUser.login}
+        password: ${newUser.password}
+    
+        Ne repondez pas au cette courriel`,
+      };
+
+      console.log(newUser);
+
+      this.sendMail(messageForEmail);
     }
   }
 }

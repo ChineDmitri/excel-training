@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
-
+  
   app.use(cookieParser());
 
   app.useGlobalPipes(

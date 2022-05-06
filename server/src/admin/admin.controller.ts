@@ -1,9 +1,9 @@
 import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
-import { Response } from 'express';
+import { response, Response } from 'express';
 
 import { AdminService } from './admin.service';
 
-import { AdminAuthDto } from './dto/adminAuth.dto';
+import { AdminAuthDto, CreateUsersDto } from './dto/adminAuth.dto';
 
 import { ResponseAuth } from './entities/admin.entity';
 
@@ -16,8 +16,10 @@ export class AdminController {
   async login(
     @Body() admin: AdminAuthDto,
     @Res() response: Response,
-  ): Promise<any> {
-    const authentification: any = await this.adminService.login(admin);
+  ): Promise<ResponseAuth> {
+    const authentification: any = await this.adminService.authentification(
+      admin,
+    );
 
     response.cookie('token', authentification.token, {
       maxAge: 60000 * 60 * 24, // max vie 1 jour
@@ -27,5 +29,12 @@ export class AdminController {
 
     response.json(authentification.objRes);
     return authentification.objRes;
+  }
+
+  @Post('create-user')
+  @HttpCode(200)
+  creteUser(@Body() users: CreateUsersDto[], @Res() response: Response): any {
+    this.adminService.createUsers(users);
+    response.json({ message: `${users.length} utilisateur sont crée` });
   }
 }
