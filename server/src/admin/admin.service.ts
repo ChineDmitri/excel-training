@@ -3,8 +3,8 @@ import { Injectable } from '@nestjs/common';
 import { AdminQuery } from '../database/admin.query';
 
 import * as nodemailer from 'nodemailer';
-import { createHmac } from 'crypto';
-import { compare } from 'bcrypt';
+import { AES, enc } from 'crypto-js';
+import { compare, hashSync } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
 import { ResponseAuth } from './entities/admin.entity';
@@ -18,6 +18,7 @@ import { IUser } from '../interfaces/user.interfaces';
 export class AdminService {
   constructor(private readonly adminQuery: AdminQuery) {}
 
+  /* AUTHENTIFICATION */
   async authentification(admin: AdminAuthDto) {
     const objRes: ResponseAuth = {
       isAuth: false,
@@ -53,7 +54,7 @@ export class AdminService {
           userId: adminData.id,
           login: adminData.login,
         },
-        process.env.jwtKey,
+        process.env.jwt_key,
         { expiresIn: '24h' },
       );
 
@@ -71,6 +72,7 @@ export class AdminService {
     }
   }
 
+  /* FOR SEND MESSAGE */
   sendMail(message): void {
     const transporter = nodemailer.createTransport({
       host: 'smtp.' + process.env.hostSMTP,
@@ -84,24 +86,24 @@ export class AdminService {
     transporter.sendMail(message);
   }
 
+  /* CREATE USERS */
   async createUsers(users: CreateUsersDto[]) {
+    const newUsers: IUser[] = [];
+    /* CREATION USER ONE BY ONE */
     for (const user of users) {
       const newUser: IUser = {
         login: user.login,
-        email: user.email,
+        email: '',
         password: '',
       };
 
-      const passwordUser = createHmac('sha256', process.env.sha256_password)
-        .update(user.email)
-        .digest('hex')
-        .substring(0, 5);
+      newUser.email = AES.encrypt(user.email, process.env.AES_key).toString(); // encrypt email
 
-      newUser.password = passwordUser;
+      newUser.password = newUser.email.substring(0, 8); // 8 first sympol for password from email hash
 
       const messageForEmail = {
-        from: 'Mailler test <letitia.tillman91@ethereal.email>',
-        to: newUser.email,
+        from: `Mailler test <${process.env.userSMTP}@${process.env.hostSMTP}>`,
+        to: user.email,
         subject: 'Enregistrement sur platforme ExcellentRANS',
         text: `Vous etes enregistré sur platform ExcellentRANS
     
@@ -111,9 +113,21 @@ export class AdminService {
         Ne repondez pas au cette courriel`,
       };
 
-      console.log(newUser);
+      // console.log('avant', newUser, test);
 
-      this.sendMail(messageForEmail);
+      this.sendMail(messageForEmail); // SEND MESSAGE FOR USER WITH HIS CREDENTIALS
+
+      // console.log(newUser);
+
+      newUser.password = hashSync(
+        newUser.password,
+        parseInt(process.env.salt_of_round, 10),
+      ); // ReAssigne password with bcrypt
+
+      newUsers.push(newUser); // add in array newUser
     }
+    // console.log(newUsers);
+
+    return this.adminQuery.createUsers(newUsers);
   }
 }

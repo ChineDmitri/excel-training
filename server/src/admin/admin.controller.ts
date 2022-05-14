@@ -33,8 +33,14 @@ export class AdminController {
 
   @Post('create-user')
   @HttpCode(200)
-  creteUser(@Body() users: CreateUsersDto[], @Res() response: Response): any {
-    this.adminService.createUsers(users);
-    response.json({ message: `${users.length} utilisateur sont crée` });
+  async creteUser(
+    @Body() users: CreateUsersDto[],
+    @Res() response: Response,
+  ): Promise<any> {
+    const message = await this.adminService.createUsers(users);
+
+    response.json({ message });
+
+    return message;
   }
 }
