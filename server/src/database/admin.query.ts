@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import * as mysql from 'mysql2';
-import { IUser } from '../interfaces/user.interfaces';
 
 import { configDataBase } from './config';
+
+import { IUser } from '../interfaces/user.interface';
 
 @Injectable()
 export class AdminQuery {
@@ -19,10 +20,14 @@ export class AdminQuery {
 
         dataBase.end();
 
-        return result[0];
+        return result[0][0];
       })
       .catch((err) => {
+        dataBase.end();
+
         console.log('err', err);
+
+        return err;
       });
   }
 
@@ -60,8 +65,11 @@ export class AdminQuery {
       .catch((err) => {
         console.log('err', err.sqlMessage);
 
-        return err.sqlMessage;
+        dataBase.end();
+
+        return err.message;
       });
+
     // console.log(sql);
   }
 }

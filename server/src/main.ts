@@ -7,11 +7,15 @@ import { AppModule } from './app.module';
 import { configDataBase } from './database/config';
 import * as cookieParser from 'cookie-parser';
 
+// import { AuthAdminMiddleware } from './admin/auth-admin.middleware';
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
   });
-  
+
+  // app.use(AuthAdminMiddleware);
+
   app.use(cookieParser());
 
   app.useGlobalPipes(

@@ -1,18 +1,18 @@
 import { Injectable } from '@nestjs/common';
 
-import { AdminQuery } from '../database/admin.query';
-
 import * as nodemailer from 'nodemailer';
 import { AES, enc } from 'crypto-js';
 import { compare, hashSync } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
+import { AdminQuery } from '../database/admin.query';
+
 import { ResponseAuth } from './entities/admin.entity';
 
 import { AdminAuthDto, CreateUsersDto } from './dto/adminAuth.dto';
 
-import { IAdmin } from '../interfaces/admin.interfaces';
-import { IUser } from '../interfaces/user.interfaces';
+import { IAdmin } from '../interfaces/admin.interface';
+import { IUser } from '../interfaces/user.interface';
 
 @Injectable()
 export class AdminService {
@@ -29,7 +29,7 @@ export class AdminService {
     const adminData: IAdmin = await this.adminQuery
       .findAdmin(admin.login)
       .then((admin) => {
-        return admin[0];
+        return admin;
       });
 
     // si on ne trouve pas administrateur n'authentifié pas

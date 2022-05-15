@@ -1,20 +1,27 @@
 import 'dotenv/config';
 
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 // import { ConfigModule } from '@nestjs/config';
 
-import { AdminController } from './admin/admin.controller';
-import { AdminService } from './admin/admin.service';
 // import { configDataBase } from './database/config';
-import { AdminQuery } from './database/admin.query';
+import { AuthAdminMiddleware } from './admin/auth-admin.middleware';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
-  imports: [
-    // ConfigModule.forRoot({
-    //   envFilePath: '.env',
-    // }),
-  ],
-  controllers: [AdminController],
-  providers: [AdminService, AdminQuery],
+  imports: [AdminModule],
+  // controllers: [AdminController],
+  // providers: [AdminService, AdminQuery],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(AuthAdminMiddleware)
+      .exclude({ path: 'api/admin/login', method: RequestMethod.POST })
+      .forRoutes('admin');
+  }
+}

@@ -27,8 +27,13 @@ export class AdminController {
       // secure: true, // en production
     });
 
-    response.json(authentification.objRes);
-    return authentification.objRes;
+    if (authentification.objRes.isAuth) {
+      response.json(authentification.objRes);
+      return authentification.objRes;
+    } else {
+      response.status(401).json(authentification.objRes);
+      return authentification.objRes;
+    }
   }
 
   @Post('create-user')
