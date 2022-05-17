@@ -9,7 +9,7 @@ import { AdminQuery } from '../database/admin.query';
 
 import { ResponseAuth } from './entities/admin.entity';
 
-import { AdminAuthDto, CreateUsersDto } from './dto/adminAuth.dto';
+import { AdminAuthDto, NewUser } from './dto/admin.dto';
 
 import { IAdmin } from '../interfaces/admin.interface';
 import { IUser } from '../interfaces/user.interface';
@@ -73,7 +73,7 @@ export class AdminService {
   }
 
   /* FOR SEND MESSAGE */
-  sendMail(message): void {
+  async sendMail(message): Promise<void> {
     const transporter = nodemailer.createTransport({
       host: 'smtp.' + process.env.hostSMTP,
       port: parseInt(process.env.portSMTP, 10),
@@ -83,11 +83,11 @@ export class AdminService {
       },
     });
 
-    transporter.sendMail(message);
+    await transporter.sendMail(message);
   }
 
   /* CREATE USERS */
-  async createUsers(users: CreateUsersDto[]) {
+  async createUsers(users: NewUser[]) {
     const newUsers: IUser[] = [];
     /* CREATION USER ONE BY ONE */
     for (const user of users) {

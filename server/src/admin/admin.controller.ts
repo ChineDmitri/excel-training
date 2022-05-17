@@ -1,11 +1,11 @@
 import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
-import { response, Response } from 'express';
+import { Response } from 'express';
 
 import { AdminService } from './admin.service';
 
-import { AdminAuthDto, CreateUsersDto } from './dto/adminAuth.dto';
+import { AdminAuthDto, CreateUsersDto } from './dto/admin.dto';
 
-import { ResponseAuth } from './entities/admin.entity';
+import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -39,10 +39,10 @@ export class AdminController {
   @Post('create-user')
   @HttpCode(200)
   async creteUser(
-    @Body() users: CreateUsersDto[],
+    @Body() data: CreateUsersDto,
     @Res() response: Response,
-  ): Promise<any> {
-    const message = await this.adminService.createUsers(users);
+  ): Promise<ResponseMessageOnly> {
+    const message = await this.adminService.createUsers(data.users);
 
     response.json({ message });
 

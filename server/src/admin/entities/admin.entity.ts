@@ -3,7 +3,6 @@ export class ResponseAuth {
   message: string;
 }
 
-export class ResponseCreateUser {
-  countUser: number;
+export class ResponseMessageOnly {
   message: string;
 }
