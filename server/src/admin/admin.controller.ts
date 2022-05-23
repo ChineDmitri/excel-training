@@ -1,9 +1,17 @@
-import { Body, Controller, HttpCode, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Patch,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { Response } from 'express';
 
 import { AdminService } from './admin.service';
 
-import { AdminAuthDto, CreateUsersDto } from './dto/admin.dto';
+import { AdminAuthDto, CreateUsersDto, NewPasswordDto } from './dto/admin.dto';
 
 import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
 
@@ -11,6 +19,7 @@ import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
+  /* ROUTE for login */
   @Post('login')
   @HttpCode(200)
   async login(
@@ -36,13 +45,33 @@ export class AdminController {
     }
   }
 
+  /* ROUTE for reinitilization password */
+  @Patch('new-password')
+  @HttpCode(200)
+  async newPassword(
+    @Body() data: NewPasswordDto,
+    @Res() response: Response,
+  ): Promise<ResponseMessageOnly> {
+    const dataService = await this.adminService.updateAdminPassword(
+      data,
+      response.locals.adminToken.login, // get login for searche in DB
+    );
+
+    dataService.status /* IF status false code response 200 */
+      ? response.json({ message: dataService.message })
+      : response.status(400).json({ message: dataService.message });
+
+    return dataService;
+  }
+
+  /* ROUTE for create users */
   @Post('create-user')
   @HttpCode(200)
   async creteUser(
     @Body() data: CreateUsersDto,
     @Res() response: Response,
   ): Promise<ResponseMessageOnly> {
-    const message = await this.adminService.createUsers(data.users);
+    const message: any = await this.adminService.createUsers(data.users);
 
     response.json({ message });
 

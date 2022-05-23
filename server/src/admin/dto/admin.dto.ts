@@ -24,3 +24,14 @@ export class CreateUsersDto {
   @Type(() => NewUser)
   readonly users: NewUser[];
 }
+
+export class NewPasswordDto {
+  @IsString()
+  readonly oldPassword: string;
+
+  @IsString()
+  readonly newPassword_1: string;
+
+  @IsString()
+  readonly newPassword_2: string;
+}

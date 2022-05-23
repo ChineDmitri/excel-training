@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
 import * as nodemailer from 'nodemailer';
-import { AES, enc } from 'crypto-js';
+import { AES } from 'crypto-js';
 import { compare, hashSync } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
 import { AdminQuery } from '../database/admin.query';
 
-import { ResponseAuth } from './entities/admin.entity';
+import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
 
-import { AdminAuthDto, NewUser } from './dto/admin.dto';
+import { AdminAuthDto, NewPasswordDto, NewUser } from './dto/admin.dto';
 
 import { IAdmin } from '../interfaces/admin.interface';
 import { IUser } from '../interfaces/user.interface';
@@ -41,17 +41,17 @@ export class AdminService {
     }
 
     // verification de mot de pass avec bcrypt
-    const verification: boolean = await compare(
+    const verificationPassword: boolean = await compare(
       admin.password,
       adminData.password,
     ).then((log) => {
       return log;
     });
 
-    if (verification) {
+    if (verificationPassword) {
       const token = sign(
         {
-          userId: adminData.id,
+          id: adminData.id,
           login: adminData.login,
         },
         process.env.jwt_key,
@@ -72,6 +72,52 @@ export class AdminService {
     }
   }
 
+  /* Modification old password */
+  async updateAdminPassword(
+    data: NewPasswordDto,
+    login: string,
+  ): Promise<ResponseMessageOnly> {
+    // searche admin
+    const adminData: IAdmin = await this.adminQuery
+      .findAdmin(login)
+      .then((admin) => {
+        return admin;
+      });
+
+    /* verification mot de passe */
+    try {
+      const verificationPassword: boolean = await compare(
+        data.oldPassword,
+        adminData.password,
+      ).then((log) => {
+        return log;
+      });
+
+      if (!verificationPassword) {
+        throw "Ancien mot de passe n'est pas correct";
+      }
+
+      if (data.newPassword_1 !== data.newPassword_2) {
+        throw 'Nouveau mot de passe il faut remplire correctement!';
+      }
+    } catch (err) {
+      return { status: false, message: err }; // returne false for response with code 400 Bad Request
+    }
+
+    const newPassword = hashSync(
+      data.newPassword_1,
+      parseInt(process.env.salt_of_round, 10),
+    );
+
+    const responseMessage = await this.adminQuery.updatePassword(
+      login,
+      newPassword,
+      1,
+    );
+
+    return { status: true, message: responseMessage };
+  }
+
   /* FOR SEND MESSAGE */
   async sendMail(message): Promise<void> {
     const transporter = nodemailer.createTransport({
@@ -87,7 +133,7 @@ export class AdminService {
   }
 
   /* CREATE USERS */
-  async createUsers(users: NewUser[]) {
+  async createUsers(users: NewUser[]): Promise<string> {
     const newUsers: IUser[] = [];
     /* CREATION USER ONE BY ONE */
     for (const user of users) {

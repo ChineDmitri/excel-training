@@ -11,23 +11,27 @@ import { IDecodedToken } from '../interfaces/jwt.interface';
 export class AuthAdminMiddleware implements NestMiddleware {
   constructor(private readonly adminQuery: AdminQuery) {}
 
-  async use(reqest: Request, response: Response, next: () => void) {
-    const cookieToken = reqest.cookies.token;
+  async use(request: Request, response: Response, next: () => void) {
+    const cookieToken = request.cookies.token;
 
     try {
       if (cookieToken === undefined) {
         throw "N'est pas authentifier";
       }
 
-      /* Type 'string | JwtPayload' is not assignable to type 'IDecodedToken'. */
-      // const decodedToken: IDecodedToken = verify(token, process.env.jwt_key);
-      /* SOLUTION reAssigne new object */
+      /* ERROR TSLint
+      Type 'string | JwtPayload' is not assignable to type 'IDecodedToken'.
+      const decodedToken: IDecodedToken = verify(token, process.env.jwt_key);
+      SOLUTION reAssigne new object */
       const jwtPayload: any = verify(cookieToken, process.env.jwt_key);
       const decodedToken: IDecodedToken = { ...jwtPayload };
 
+      // save in locals token decoded token
+      response.locals.adminToken = decodedToken;
+
       const admin: IAdmin = await this.adminQuery.findAdmin(decodedToken.login);
 
-      if (admin.id !== decodedToken.userId) {
+      if (admin.id !== decodedToken.id) {
         throw 'Token broken';
       }
     } catch (err) {

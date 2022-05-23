@@ -4,5 +4,6 @@ export class ResponseAuth {
 }
 
 export class ResponseMessageOnly {
+  status?: boolean;
   message: string;
 }

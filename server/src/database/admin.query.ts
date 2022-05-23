@@ -31,7 +31,7 @@ export class AdminQuery {
       });
   }
 
-  createUsers(newUsers: IUser[]) {
+  createUsers(newUsers: IUser[]): Promise<string> {
     const dataBase = mysql.createConnection(configDataBase);
 
     let n = 0;
@@ -71,5 +71,34 @@ export class AdminQuery {
       });
 
     // console.log(sql);
+  }
+
+  /* UPDATE PASSWORD */
+  updatePassword(
+    login: string,
+    newPassword: string,
+    whoIs: number = null,
+  ): Promise<string> {
+    const dataBase = mysql.createConnection(configDataBase);
+
+    const table: string = whoIs === 1 ? 'admin' : 'user'; // 1 -> Admin ; undefined -> user
+
+    const sql = `UPDATE ${table} SET password="${newPassword}" WHERE login="${login}"`;
+
+    return dataBase
+      .promise()
+      .query(sql)
+      .then(() => {
+        dataBase.end();
+
+        return 'Mot de passe a était changé';
+      })
+      .catch((err) => {
+        console.log('err', err.sqlMessage);
+
+        dataBase.end();
+
+        return err.message;
+      });
   }
 }
