@@ -5,7 +5,7 @@ import * as mysql from 'mysql2';
 import { AppModule } from './app.module';
 
 import { configDataBase } from './database/config';
-import * as cookieParser from 'cookie-parser';
+import { default as cookieParser } from 'cookie-parser';
 
 // import { AuthAdminMiddleware } from './admin/auth-admin.middleware';
 

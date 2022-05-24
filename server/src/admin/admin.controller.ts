@@ -6,6 +6,8 @@ import {
   Post,
   Req,
   Res,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -14,6 +16,14 @@ import { AdminService } from './admin.service';
 import { AdminAuthDto, CreateUsersDto, NewPasswordDto } from './dto/admin.dto';
 
 import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
+
+// import { admin } from
+import * as firebaseAdmin from 'firebase-admin';
+
+import { initializeApp } from 'firebase/app';
+import { getStorage, ref, uploadBytes } from 'firebase/storage';
+import { default as serviceAccount } from '../excel-tosa-firebase-adminsdk.json';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('admin')
 export class AdminController {
@@ -76,5 +86,46 @@ export class AdminController {
     response.json({ message });
 
     return message;
+  }
+
+  @Post('test')
+  @UseInterceptors(FileInterceptor('file'))
+  testUpload(@Body() data: any, @UploadedFile() file) {
+    console.log(file.buffer);
+
+    // const admin = require('firebase-admin');
+    // const serviceAccount = require('../excel-tosa-firebase-adminsdk.json');
+    // admin.initializeApp({
+    //   credential: admin.credential.cert(serviceAccount),
+    // });
+    // firebaseAdmin.initializeApp({
+    //   credential: firebaseAdmin.credential.cert(serviceAccount),
+    // });
+    // const firebaseDb = firebaseAdmin.firestore();
+    // console.log(firebaseDb);
+    // console.log(req);
+    const firebase = initializeApp(serviceAccount);
+    const storage = getStorage(firebase);
+
+    const storageRef = ref(storage, 'some-child.jpg');
+
+    uploadBytes(storageRef, file.buffer).then((snapshot) => {
+      console.log(snapshot);
+      console.log('Uploaded a blob or file!');
+    });
+
+    /* // Create a reference to 'mountains.jpg'
+    const mountainsRef = ref(
+      storage,
+      `C:\Users\Stagiaire\OneDrive\Desktop\appImg\excel-training\server\src\admin\cc_.jpg`,
+    );
+
+    // Create a reference to 'images/mountains.jpg'
+    const mountainImagesRef = ref(
+      storage,
+      `C:\Users\Stagiaire\OneDrive\Desktop\appImg\excel-training\server\src\admin\cc_.jpg`,
+    ); */
+    // console.log('mountainsRef', mountainsRef);
+    // console.log('mountainImagesRef', mountainImagesRef);
   }
 }

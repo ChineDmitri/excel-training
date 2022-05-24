@@ -2,8 +2,13 @@
 /dist
 /node_modules
 package-lock.json
+
+# variable envirenment
 .dev.env
 .env
+
+# certificate FireBase
+/src/excel-tosa-firebase-adminsdk.json 
 
 # Logs
 logs
