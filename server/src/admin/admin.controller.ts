@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   HttpCode,
   Patch,
   Post,
@@ -18,11 +19,11 @@ import { AdminAuthDto, CreateUsersDto, NewPasswordDto } from './dto/admin.dto';
 import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
 
 // import { admin } from
-import * as firebaseAdmin from 'firebase-admin';
+// import * as firebaseAdmin from 'firebase-admin';
 
 import { initializeApp } from 'firebase/app';
-import { getStorage, ref, uploadBytes } from 'firebase/storage';
-import { default as serviceAccount } from '../excel-tosa-firebase-adminsdk.json';
+import { deleteObject, getStorage, ref, uploadBytes } from 'firebase/storage';
+import { default as serviceAccount } from './excel-tosa-firebase-adminsdk.json';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('admin')
@@ -91,7 +92,7 @@ export class AdminController {
   @Post('test')
   @UseInterceptors(FileInterceptor('file'))
   testUpload(@Body() data: any, @UploadedFile() file) {
-    console.log(file.buffer);
+    // console.log(file.buffer);
 
     // const admin = require('firebase-admin');
     // const serviceAccount = require('../excel-tosa-firebase-adminsdk.json');
@@ -104,15 +105,68 @@ export class AdminController {
     // const firebaseDb = firebaseAdmin.firestore();
     // console.log(firebaseDb);
     // console.log(req);
+    console.log(file);
     const firebase = initializeApp(serviceAccount);
     const storage = getStorage(firebase);
 
     const storageRef = ref(storage, 'some-child.jpg');
 
     uploadBytes(storageRef, file.buffer).then((snapshot) => {
-      console.log(snapshot);
+      // console.log(snapshot);
       console.log('Uploaded a blob or file!');
     });
+
+    /* // Create a reference to 'mountains.jpg'
+    const mountainsRef = ref(
+      storage,
+      `C:\Users\Stagiaire\OneDrive\Desktop\appImg\excel-training\server\src\admin\cc_.jpg`,
+    );
+
+    // Create a reference to 'images/mountains.jpg'
+    const mountainImagesRef = ref(
+      storage,
+      `C:\Users\Stagiaire\OneDrive\Desktop\appImg\excel-training\server\src\admin\cc_.jpg`,
+    ); */
+    // console.log('mountainsRef', mountainsRef);
+    // console.log('mountainImagesRef', mountainImagesRef);
+  }
+
+  @Delete('test-del')
+  @UseInterceptors(FileInterceptor('file'))
+  testDelete(@Body() data: any) {
+    // console.log(file.buffer);
+
+    // const admin = require('firebase-admin');
+    // const serviceAccount = require('../excel-tosa-firebase-adminsdk.json');
+    // admin.initializeApp({
+    //   credential: admin.credential.cert(serviceAccount),
+    // });
+    // firebaseAdmin.initializeApp({
+    //   credential: firebaseAdmin.credential.cert(serviceAccount),
+    // });
+    // const firebaseDb = firebaseAdmin.firestore();
+    // console.log(firebaseDb);
+    // console.log(req);
+    // console.log(file);
+    const firebase = initializeApp(serviceAccount);
+    const storage = getStorage(firebase);
+
+    const storageRef = ref(storage, 'some-child.jpg');
+
+    // console.log(storageRef);
+
+    deleteObject(storageRef)
+      .then(() => {
+        console.log('file del');
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // uploadBytes(storageRef, file.buffer).then((snapshot) => {
+    //   // console.log(snapshot);
+    //   console.log('Uploaded a blob or file!');
+    // });
 
     /* // Create a reference to 'mountains.jpg'
     const mountainsRef = ref(

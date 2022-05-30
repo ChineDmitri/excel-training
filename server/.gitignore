@@ -9,6 +9,7 @@ package-lock.json
 
 # certificate FireBase
 /src/excel-tosa-firebase-adminsdk.json 
+/src/admin/excel-tosa-firebase-adminsdk.json 
 
 # Logs
 logs
