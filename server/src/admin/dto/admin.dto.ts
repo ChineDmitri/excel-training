@@ -1,5 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsEmail, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 
 export class AdminAuthDto {
   @IsString()
@@ -23,6 +31,17 @@ export class CreateUsersDto {
   @ValidateNested({ each: true }) //Validate for each, authorised only login and email
   @Type(() => NewUser)
   readonly users: NewUser[];
+}
+
+export class CreateQuestionDto {
+  @IsString()
+  readonly question: string;
+
+  @IsString()
+  readonly response1: string;
+
+  @IsString()
+  readonly response2: string;
 }
 
 export class NewPasswordDto {

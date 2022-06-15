@@ -6,12 +6,20 @@ import {
   Post,
   Req,
   Res,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
 import { AdminService } from './admin.service';
 
-import { AdminAuthDto, CreateUsersDto, NewPasswordDto } from './dto/admin.dto';
+import {
+  AdminAuthDto,
+  CreateQuestionDto,
+  CreateUsersDto,
+  NewPasswordDto,
+} from './dto/admin.dto';
 
 import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
 
@@ -76,5 +84,31 @@ export class AdminController {
     response.json({ message });
 
     return message;
+  }
+
+  /* ROUTE for create question */
+  @Post('create-question')
+  @HttpCode(201)
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'imgTitle', maxCount: 1 },
+      { name: 'imgResponse1', maxCount: 1 },
+      { name: 'imgResponse2', maxCount: 1 },
+    ]),
+  )
+  async creteQuestion(
+    // @Body() data_fields: any,
+    @UploadedFiles()
+    file: { imgTitle: any; imgResponse1: any; imgResponse2: any },
+    @Body() data: CreateQuestionDto,
+    @Res() response: Response,
+  ): Promise<any> {
+    console.log('TITLE', file.imgTitle);
+    console.log('REZPONSE 1 ', file.imgResponse1);
+    console.log('REZPONSE 2 ', file.imgResponse2);
+
+    console.log('Data', data);
+
+    return 0;
   }
 }
