@@ -1,10 +1,8 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsEmail,
-  IsEmpty,
-  IsNumber,
-  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -35,13 +33,43 @@ export class CreateUsersDto {
 
 export class CreateQuestionDto {
   @IsString()
-  readonly question: string;
+  readonly description: string;
 
   @IsString()
   readonly response1: string;
 
+  @IsBoolean()
+  readonly isResponse1: boolean;
+
   @IsString()
   readonly response2: string;
+
+  @IsBoolean()
+  readonly isResponse2: boolean;
+
+  @IsString()
+  readonly response3: string;
+
+  @IsBoolean()
+  readonly isResponse3: boolean;
+
+  @IsString()
+  readonly response4: string;
+
+  @IsBoolean()
+  readonly isResponse4: boolean;
+
+  @IsString()
+  readonly response5: string;
+
+  @IsBoolean()
+  readonly isResponse5: boolean;
+
+  @IsString()
+  readonly goodResponse: string;
+
+  @IsString()
+  readonly videoResponse: string;
 }
 
 export class NewPasswordDto {

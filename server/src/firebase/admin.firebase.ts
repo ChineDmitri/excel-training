@@ -30,13 +30,17 @@ export class AdminFirebase {
     const storageRef = ref(storage, fileName);
 
     const upload = await uploadBytes(storageRef, file.buffer)
-      .then(() => {
-        return fileName;
+      .then((event) => {
+        return event.metadata.name;
       })
       .catch((err) => {
         return err;
       });
 
+    // const mountainImagesRef = ref(
+    //   storage,
+    //   `https://firebasestorage.googleapis.com/v0/b/excel-tosa.appspot.com/o/${fileName}`,
+    // );
     return upload;
   }
 }

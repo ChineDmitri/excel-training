@@ -1,16 +1,19 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
+  Param,
   Patch,
   Post,
-  Req,
   Res,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+
+import { IFile } from '../interfaces/firebase.interfase';
 
 import { AdminService } from './admin.service';
 
@@ -21,7 +24,11 @@ import {
   NewPasswordDto,
 } from './dto/admin.dto';
 
-import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
+import {
+  OneQuestion,
+  ResponseAuth,
+  ResponseMessageOnly,
+} from './entities/admin.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -91,7 +98,7 @@ export class AdminController {
   @HttpCode(201)
   @UseInterceptors(
     FileFieldsInterceptor([
-      { name: 'imgTitle', maxCount: 1 },
+      { name: 'imgTest', maxCount: 1 },
       { name: 'imgResponse1', maxCount: 1 },
       { name: 'imgResponse2', maxCount: 1 },
     ]),
@@ -99,16 +106,51 @@ export class AdminController {
   async creteQuestion(
     // @Body() data_fields: any,
     @UploadedFiles()
-    file: { imgTitle: any; imgResponse1: any; imgResponse2: any },
+    files: {
+      imgTest: IFile[] | undefined;
+      /* 
+      imgResponse1: IFile[] | undefined;
+      imgResponse2: IFile[] | undefined; 
+      */
+    },
     @Body() data: CreateQuestionDto,
     @Res() response: Response,
-  ): Promise<any> {
-    console.log('TITLE', file.imgTitle);
-    console.log('REZPONSE 1 ', file.imgResponse1);
-    console.log('REZPONSE 2 ', file.imgResponse2);
+  ): Promise<string> {
+    const questionId = await this.adminService.createQuestion(files, data);
+    // console.log('TITLE', files.imgTest);
+    // console.log('REZPONSE 1 ', files.imgResponse1);
+    // console.log('REZPONSE 2 ', files.imgResponse2);
+    // console.log('FILES', files, '\n');
 
-    console.log('Data', data);
+    // const arr = [];
 
-    return 0;
+    // arr.push(files.imgTest, files.imgResponse1, files.imgResponse2);
+
+    // console.log('data', data);
+
+    response
+      .status(201)
+      .json({ message: `Create question avec id: ${questionId}` });
+    return `Create question avec id: ${questionId}`;
+  }
+
+  @Get('question/:id')
+  @HttpCode(200)
+  async getOneQuestion(
+    @Param('id') questionNumber: number,
+  ): Promise<OneQuestion> {
+    console.log(
+      (await this.adminService.getQuestionById(questionNumber)).is_response1
+        ? 'true'
+        : 'false',
+    );
+
+    console.log(
+      (await this.adminService.getQuestionById(questionNumber)).is_response2
+        ? 'true'
+        : 'false',
+    );
+
+    return this.adminService.getQuestionById(questionNumber);
   }
 }

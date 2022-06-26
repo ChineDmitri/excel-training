@@ -6,17 +6,30 @@ import { compare, hashSync } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 
 import { AdminQuery } from '../database/admin.query';
+import { AdminFirebase } from '../firebase/admin.firebase';
 
-import { ResponseAuth, ResponseMessageOnly } from './entities/admin.entity';
+import {
+  OneQuestion,
+  ResponseAuth,
+  ResponseMessageOnly,
+} from './entities/admin.entity';
 
-import { AdminAuthDto, NewPasswordDto, NewUser } from './dto/admin.dto';
+import {
+  AdminAuthDto,
+  CreateQuestionDto,
+  NewPasswordDto,
+  NewUser,
+} from './dto/admin.dto';
 
 import { IAdmin } from '../interfaces/admin.interface';
 import { IUser } from '../interfaces/user.interface';
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly adminQuery: AdminQuery) {}
+  constructor(
+    private readonly adminQuery: AdminQuery,
+    private adminFirebase: AdminFirebase,
+  ) {}
 
   /* AUTHENTIFICATION */
   async authentification(admin: AdminAuthDto) {
@@ -175,5 +188,37 @@ export class AdminService {
     // console.log(newUsers);
 
     return this.adminQuery.createUsers(newUsers);
+  }
+
+  /* CREATE QUESTION */
+  async createQuestion(files: any, data: CreateQuestionDto): Promise<string> {
+    const nameImg = await this.adminFirebase.uploadImage(files.imgTest[0]); // files.imgTest[0] isArray donc first element in array
+    /* 
+    const imgResponse1 = await this.adminFirebase.uploadImage(files.imgResponse1[0]); // files.imgResponse1[0] isArray donc first element in array
+    const imgResponse2 = await this.adminFirebase.uploadImage(files.imgResponse1[0]); // files.imgResponse1[0] isArray donc first element in array
+    */
+
+    // /*
+    // TEST FOR EACH RESPONE FOR QUESTION
+    // IF RESPONSE EMPTY SO IT'S NULL
+    //  */
+    // const response: IResponseForQuestion = {
+    //   response1: data.response1 === '' ? null : data.response1,
+    //   response2: data.response2 === '' ? null : data.response2,
+    //   response3: data.response3 === '' ? null : data.response3,
+    //   response4: data.response4 === '' ? null : data.response4,
+    //   response5: data.response5 === '' ? null : data.response5,
+    // };
+
+    const questionId = await this.adminQuery.createQuestion(nameImg, data);
+
+    return questionId;
+  }
+
+  /* RETOURNED ONE QUESTION BY ID */
+  async getQuestionById(id: number): Promise<OneQuestion> {
+    const result = await this.adminQuery.getQuestion(id);
+
+    return result[0];
   }
 }
