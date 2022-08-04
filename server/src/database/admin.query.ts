@@ -9,6 +9,9 @@ import { IUser } from '../interfaces/user.interface';
 
 @Injectable()
 export class AdminQuery {
+  /*
+   * SEARCH ONE ADMIN
+   */
   findAdmin(login: string) {
     const dataBase = mysql.createConnection(configDataBase);
 
@@ -33,6 +36,9 @@ export class AdminQuery {
       });
   }
 
+  /*
+   * CREATE USERS
+   */
   createUsers(newUsers: IUser[]): Promise<string> {
     const dataBase = mysql.createConnection(configDataBase);
 
@@ -75,7 +81,9 @@ export class AdminQuery {
     // console.log(sql);
   }
 
-  /* UPDATE PASSWORD */
+  /*
+   * UPDATE PASSWORD
+   */
   updatePassword(
     login: string,
     newPassword: string,
@@ -104,7 +112,9 @@ export class AdminQuery {
       });
   }
 
-  /* CREATE QUESTION */
+  /*
+   * CREATE QUESTION
+   */
   createQuestion(nameImg: string, data: CreateQuestionDto): Promise<string> {
     const dataBase = mysql.createConnection(configDataBase);
 
@@ -141,6 +151,32 @@ export class AdminQuery {
       });
   }
 
+  /*
+   * DELETE QUESTION
+   */
+  deleteQuestion(id: number): Promise<any> {
+    const dataBase = mysql.createConnection(configDataBase);
+
+    const sql = `DELETE FROM question WHERE id=${id}`;
+
+    return dataBase
+      .promise()
+      .query(sql)
+      .then(() => {
+        dataBase.end();
+
+        return `Question id ${id} was deleted`;
+      })
+      .catch((err) => {
+        dataBase.end();
+
+        return err;
+      });
+  }
+
+  /*
+   * GET ONE QUESTION
+   */
   getQuestion(id: number): Promise<any> {
     const dataBase = mysql.createConnection(configDataBase);
 

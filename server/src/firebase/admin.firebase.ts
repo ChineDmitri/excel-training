@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { initializeApp } from 'firebase/app';
 
-import { getStorage, uploadBytes, ref } from 'firebase/storage';
+import { getStorage, uploadBytes, ref, deleteObject } from 'firebase/storage';
 
 import { IFile } from '../interfaces/firebase.interfase';
 
@@ -19,6 +19,9 @@ export class AdminFirebase {
 
   private readonly firebase = initializeApp(configFirebase);
 
+  /*
+   * UPLOAD ONE FILE FROM FIREBAS
+   */
   async uploadImage(file: IFile): Promise<string> {
     const name = file.originalname.split(' ').join('_'); // delete all space
     const extention = this.MIME_TYPES[file.mimetype];
@@ -29,7 +32,7 @@ export class AdminFirebase {
 
     const storageRef = ref(storage, fileName);
 
-    const upload = await uploadBytes(storageRef, file.buffer)
+    const uploadFile = await uploadBytes(storageRef, file.buffer)
       .then((event) => {
         return event.metadata.name;
       })
@@ -41,6 +44,25 @@ export class AdminFirebase {
     //   storage,
     //   `https://firebasestorage.googleapis.com/v0/b/excel-tosa.appspot.com/o/${fileName}`,
     // );
-    return upload;
+    return uploadFile;
+  }
+
+  /*
+   * DELETE ONE FILE FROM FIREBASE
+   */
+  async deleteFile(nameFile: string): Promise<string> {
+    const storage = getStorage(this.firebase);
+
+    const storageRef = ref(storage, nameFile);
+
+    const deleteFile = await deleteObject(storageRef)
+      .then(() => {
+        return `File ${nameFile} was deleted successfully`;
+      })
+      .catch(() => {
+        return `File ${nameFile} was not deleted... probleme`;
+      });
+
+    return deleteFile;
   }
 }

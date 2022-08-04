@@ -31,7 +31,9 @@ export class AdminService {
     private adminFirebase: AdminFirebase,
   ) {}
 
-  /* AUTHENTIFICATION */
+  /*
+   * AUTHENTIFICATION
+   */
   async authentification(admin: AdminAuthDto) {
     const objRes: ResponseAuth = {
       isAuth: false,
@@ -85,7 +87,9 @@ export class AdminService {
     }
   }
 
-  /* Modification old password */
+  /*
+   * MODIFICATION OLD PASSWORD
+   */
   async updateAdminPassword(
     data: NewPasswordDto,
     login: string,
@@ -131,7 +135,9 @@ export class AdminService {
     return { status: true, message: responseMessage };
   }
 
-  /* FOR SEND MESSAGE */
+  /*
+   * FOR SEND MESSAGE
+   */
   async sendMail(message): Promise<void> {
     const transporter = nodemailer.createTransport({
       host: 'smtp.' + process.env.hostSMTP,
@@ -145,7 +151,9 @@ export class AdminService {
     await transporter.sendMail(message);
   }
 
-  /* CREATE USERS */
+  /*
+   * CREATE USERS
+   */
   async createUsers(users: NewUser[]): Promise<string> {
     const newUsers: IUser[] = [];
     /* CREATION USER ONE BY ONE */
@@ -190,7 +198,9 @@ export class AdminService {
     return this.adminQuery.createUsers(newUsers);
   }
 
-  /* CREATE QUESTION */
+  /*
+   * CREATE QUESTION
+   */
   async createQuestion(files: any, data: CreateQuestionDto): Promise<string> {
     const nameImg = await this.adminFirebase.uploadImage(files.imgTest[0]); // files.imgTest[0] isArray donc first element in array
     /* 
@@ -215,7 +225,26 @@ export class AdminService {
     return questionId;
   }
 
-  /* RETOURNED ONE QUESTION BY ID */
+  /*
+   * DELETE ONE QUESTION BY ID
+   */
+  async deleteQuestionById(id: number): Promise<string> {
+    const question: OneQuestion = await this.getQuestionById(id);
+
+    const deleteFile: string = await this.adminFirebase.deleteFile(
+      question.img,
+    ); // delete file from firebase
+
+    console.log(deleteFile); // look for stat file
+
+    const deleteQuestion = await this.adminQuery.deleteQuestion(id);
+
+    return deleteQuestion;
+  }
+
+  /*
+   * RETOURNED ONE QUESTION BY ID
+   */
   async getQuestionById(id: number): Promise<OneQuestion> {
     const result = await this.adminQuery.getQuestion(id);
 

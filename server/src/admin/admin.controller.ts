@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   Param,
@@ -34,7 +35,9 @@ import {
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  /* ROUTE for login */
+  /*
+   * ROUTE for login
+   */
   @Post('login')
   @HttpCode(200)
   async login(
@@ -60,7 +63,9 @@ export class AdminController {
     }
   }
 
-  /* ROUTE for reinitilization password */
+  /*
+   * ROUTE for reinitilization password administrator
+   */
   @Patch('new-password')
   @HttpCode(200)
   async newPassword(
@@ -79,7 +84,9 @@ export class AdminController {
     return dataService;
   }
 
-  /* ROUTE for create users */
+  /*
+   * ROUTE for create users
+   */
   @Post('create-user')
   @HttpCode(200)
   async creteUser(
@@ -93,7 +100,9 @@ export class AdminController {
     return message;
   }
 
-  /* ROUTE for create question */
+  /*
+   * ROUTE for create question
+   */
   @Post('create-question')
   @HttpCode(201)
   @UseInterceptors(
@@ -134,23 +143,37 @@ export class AdminController {
     return `Create question avec id: ${questionId}`;
   }
 
+  @Delete('question/:id')
+  @HttpCode(200)
+  async geletOneQuestion(
+    @Param('id') questionId: number,
+    @Res() response: Response,
+  ): Promise<ResponseMessageOnly> {
+    const message = await this.adminService.deleteQuestionById(questionId);
+
+    response.json({ message });
+
+    return { message };
+  }
+
+  /*
+   * ROUTE for get one question by ID
+   */
   @Get('question/:id')
   @HttpCode(200)
-  async getOneQuestion(
-    @Param('id') questionNumber: number,
-  ): Promise<OneQuestion> {
+  async getOneQuestion(@Param('id') questionId: number): Promise<OneQuestion> {
     console.log(
-      (await this.adminService.getQuestionById(questionNumber)).is_response1
+      (await this.adminService.getQuestionById(questionId)).is_response1
         ? 'true'
         : 'false',
     );
 
     console.log(
-      (await this.adminService.getQuestionById(questionNumber)).is_response2
+      (await this.adminService.getQuestionById(questionId)).is_response2
         ? 'true'
         : 'false',
     );
 
-    return this.adminService.getQuestionById(questionNumber);
+    return this.adminService.getQuestionById(questionId);
   }
 }
