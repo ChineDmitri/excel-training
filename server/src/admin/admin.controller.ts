@@ -7,7 +7,9 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Res,
+  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -108,8 +110,8 @@ export class AdminController {
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'imgTest', maxCount: 1 },
-      { name: 'imgResponse1', maxCount: 1 },
-      { name: 'imgResponse2', maxCount: 1 },
+      // { name: 'imgResponse1', maxCount: 1 },
+      // { name: 'imgResponse2', maxCount: 1 },
     ]),
   )
   async creteQuestion(
@@ -125,7 +127,10 @@ export class AdminController {
     @Body() data: CreateQuestionDto,
     @Res() response: Response,
   ): Promise<string> {
-    const questionId = await this.adminService.createQuestion(files, data);
+    const questionId = await this.adminService.createQuestion(
+      files.imgTest,
+      data,
+    );
     // console.log('TITLE', files.imgTest);
     // console.log('REZPONSE 1 ', files.imgResponse1);
     // console.log('REZPONSE 2 ', files.imgResponse2);
@@ -145,7 +150,7 @@ export class AdminController {
 
   @Delete('question/:id')
   @HttpCode(200)
-  async geletOneQuestion(
+  async deletOneQuestion(
     @Param('id') questionId: number,
     @Res() response: Response,
   ): Promise<ResponseMessageOnly> {
@@ -153,6 +158,28 @@ export class AdminController {
 
     response.json({ message });
 
+    return { message };
+  }
+
+  @Put('question/:id')
+  @HttpCode(200)
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'imgTest', maxCount: 1 }]))
+  async updateOneQuestion(
+    @UploadedFiles()
+    files: {
+      imgTest: IFile[] | undefined;
+    },
+    @Param('id') questionId: number,
+    @Body() data: CreateQuestionDto,
+    @Res() response: Response,
+  ): Promise<ResponseMessageOnly> {
+    const message: string = await this.adminService.updateQuestionById(
+      questionId,
+      data,
+      files.imgTest,
+    );
+
+    response.json({ message });
     return { message };
   }
 

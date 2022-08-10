@@ -118,6 +118,7 @@ export class AdminQuery {
   createQuestion(nameImg: string, data: CreateQuestionDto): Promise<string> {
     const dataBase = mysql.createConnection(configDataBase);
 
+    /* NULLIF( expression1, expression2 ) => expression1 === expression2 : NULL */
     const sql = `INSERT INTO question 
     (description, img, 
       response1, is_response1, 
@@ -171,6 +172,57 @@ export class AdminQuery {
         dataBase.end();
 
         return err;
+      });
+  }
+
+  /*
+   * UPDATE QUESTION
+   */
+  updateQuestion(
+    id: number,
+    nameImg: string,
+    data: CreateQuestionDto,
+  ): Promise<string> {
+    const dataBase = mysql.createConnection(configDataBase);
+
+    // fomation sql modification
+    const changeFileForSQL = nameImg ? `img = '${nameImg}',` : '';
+    // const nameImgForSQL = nameImg ? ', img,' : ',';
+
+    /* NULLIF( expression1, expression2 ) => expression1 === expression2 : NULL */
+    const sql = `UPDATE question 
+    SET description = '${data.description}',
+        ${changeFileForSQL} 
+        response1 = NULLIF('${data.response1}',''), 
+        is_response1 = ${data.isResponse1},
+        response2 = NULLIF('${data.response2}',''),
+        is_response2 = ${data.isResponse2},
+        response3 = NULLIF('${data.response3}',''),
+        is_response3 = ${data.isResponse3},
+        response4 = NULLIF('${data.response4}',''),
+        is_response4 = ${data.isResponse4},
+        response5 = NULLIF('${data.response5}',''), 
+        is_response5 = ${data.isResponse5},
+        good_response = '${data.goodResponse}',
+        video_response = '${data.videoResponse}'
+    WHERE id =${id}`;
+
+    // console.log(sql);
+
+    return dataBase
+      .promise()
+      .query(sql)
+      .then((data: any) => {
+        dataBase.end();
+
+        return data[0].insertId.toString();
+      })
+      .catch((err) => {
+        dataBase.end();
+
+        console.log(err.message);
+
+        return err.message;
       });
   }
 

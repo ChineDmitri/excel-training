@@ -23,6 +23,7 @@ import {
 
 import { IAdmin } from '../interfaces/admin.interface';
 import { IUser } from '../interfaces/user.interface';
+import { IFile } from 'src/interfaces/firebase.interfase';
 
 @Injectable()
 export class AdminService {
@@ -201,8 +202,14 @@ export class AdminService {
   /*
    * CREATE QUESTION
    */
-  async createQuestion(files: any, data: CreateQuestionDto): Promise<string> {
-    const nameImg = await this.adminFirebase.uploadImage(files.imgTest[0]); // files.imgTest[0] isArray donc first element in array
+  async createQuestion(
+    imgTest: IFile[] | undefined,
+    data: CreateQuestionDto,
+  ): Promise<string> {
+    let nameImg: string | null = null;
+    if (imgTest) {
+      nameImg = await this.adminFirebase.uploadImage(imgTest[0]); // files.imgTest[0] isArray donc first element in array
+    }
     /* 
     const imgResponse1 = await this.adminFirebase.uploadImage(files.imgResponse1[0]); // files.imgResponse1[0] isArray donc first element in array
     const imgResponse2 = await this.adminFirebase.uploadImage(files.imgResponse1[0]); // files.imgResponse1[0] isArray donc first element in array
@@ -231,6 +238,11 @@ export class AdminService {
   async deleteQuestionById(id: number): Promise<string> {
     const question: OneQuestion = await this.getQuestionById(id);
 
+    // question NULL return response
+    if (!question) {
+      return `Question avec ID: ${id} n'existe pas`;
+    }
+
     const deleteFile: string = await this.adminFirebase.deleteFile(
       question.img,
     ); // delete file from firebase
@@ -240,6 +252,39 @@ export class AdminService {
     const deleteQuestion = await this.adminQuery.deleteQuestion(id);
 
     return deleteQuestion;
+  }
+
+  /*
+   * UPDATE ONE QUESTION BY ID
+   */
+  async updateQuestionById(
+    id: number,
+    data: CreateQuestionDto,
+    imgTest: IFile[] | undefined,
+  ): Promise<string> {
+    const question: OneQuestion = await this.getQuestionById(id);
+
+    // verification question existed or not
+    if (!question) {
+      return `question ID: ${id} n'existe pas !`;
+    }
+
+    let fileName: string;
+
+    // verify if existed file delete and remplace
+    if (imgTest !== undefined) {
+      this.adminFirebase.deleteFile(question.img);
+
+      fileName = await this.adminFirebase.uploadImage(imgTest[0]);
+
+      await this.adminQuery.updateQuestion(id, fileName, data);
+
+      return `Question ID: ${id} updated with changed image`;
+    }
+
+    await this.adminQuery.updateQuestion(id, null, data);
+
+    return `Question ID: ${id} updated without changed image`;
   }
 
   /*
